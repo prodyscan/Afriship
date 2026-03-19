@@ -7,11 +7,31 @@ const kgCalcBox = document.getElementById("kgCalcBox");
 const cbmCalcBox = document.getElementById("cbmCalcBox");
 const fixedCalcBox = document.getElementById("fixedCalcBox");
 
-function toggleMenu() {
-  const menu = document.getElementById("menu");
+const menuBtn = document.getElementById("menuBtn");
+const menu = document.getElementById("menu");
+
+// MENU
+menuBtn.addEventListener("click", () => {
   menu.classList.toggle("show");
+});
+
+function showSection(sectionId) {
+  document.getElementById("expedition").classList.add("hidden");
+  document.getElementById("tracking").classList.add("hidden");
+  document.getElementById("calculator").classList.add("hidden");
+
+  document.getElementById(sectionId).classList.remove("hidden");
+  menu.classList.remove("show");
 }
 
+// Fermer menu si on clique ailleurs
+document.addEventListener("click", (e) => {
+  if (!menu.contains(e.target) && !menuBtn.contains(e.target)) {
+    menu.classList.remove("show");
+  }
+});
+
+// EXPEDITION AIR / SEA
 type.addEventListener("change", () => {
   if (type.value === "AIR") {
     airBox.classList.remove("hidden");
@@ -22,6 +42,7 @@ type.addEventListener("change", () => {
   }
 });
 
+// CALCULATEUR
 transportMode.addEventListener("change", () => {
   kgCalcBox.classList.add("hidden");
   cbmCalcBox.classList.add("hidden");
@@ -182,20 +203,3 @@ async function trackShipment() {
     "Quantité : " + data.quantity + " " + data.unit + "<br>" +
     "Statut : <strong>" + data.status + "</strong>";
 }
-
-
-
-// ouvrir menu
-document.getElementById("menuBtn").addEventListener("click", () => {
-  document.getElementById("menu").classList.toggle("show");
-});
-
-// fermer menu si on clique ailleurs
-document.addEventListener("click", (e) => {
-  const menu = document.getElementById("menu");
-  const btn = document.getElementById("menuBtn");
-
-  if (!menu.contains(e.target) && !btn.contains(e.target)) {
-    menu.classList.remove("show");
-  }
-});
