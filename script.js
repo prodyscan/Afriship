@@ -121,8 +121,8 @@ async function sendToShiplus() {
 
 
 
-  }
-}
+  
+
 
 // CREATION EXPEDITION
 async function createShipment() {
