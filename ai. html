@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Queen - AfriShipPlus</title>
+  <link rel="stylesheet" href="/static/ai.css" />
+</head>
+
+<body>
+  <div class="ai-page">
+
+    <header class="ai-header">
+      <div class="ai-title">
+        <h1>Queen - AfriShipPlus</h1>
+        <p>Assistant de préqualification pour vos expéditions aériennes et maritimes</p>
+      </div>
+
+      <div class="ai-header-actions">
+        <button id="ai-history-btn" class="ai-history-btn" type="button">☰ Historique</button>
+        <button id="ai-new-chat" class="ai-new-chat" type="button">+ Nouvelle discussion</button>
+      </div>
+    </header>
+
+    <!-- Bouton aide -->
+    <button id="ai-help-btn" class="ai-help-btn" type="button" aria-label="Infos">ℹ️</button>
+
+    <!-- Fenêtre aide -->
+    <div id="ai-help-overlay" class="ai-help-overlay" aria-hidden="true">
+      <div class="ai-help-modal" role="dialog" aria-modal="true">
+        <button id="ai-help-close" class="ai-help-close" type="button" aria-label="Fermer">✕</button>
+
+        <h2>Queen - AfriShipPlus</h2>
+
+        <h3>🇫🇷 Français</h3>
+        <ul>
+          <li>📦 Qualification des demandes d’expédition</li>
+          <li>✈️ Orientation aérien / maritime</li>
+          <li>⚖️ Vérification du poids minimum en aérien</li>
+          <li>📐 Vérification du volume minimum en maritime</li>
+          <li>🧾 Préparation avant création d’expédition</li>
+        </ul>
+
+        <p>
+          <em>
+            Queen est l’assistante de préqualification d’AfriShipPlus.
+            Elle aide à préparer votre demande avant transmission à un agent.
+          </em>
+        </p>
+
+        <hr>
+
+        <h3>🇬🇧 English</h3>
+        <ul>
+          <li>📦 Shipment request qualification</li>
+          <li>✈️ Air / sea guidance</li>
+          <li>⚖️ Air minimum weight check</li>
+          <li>📐 Sea minimum volume check</li>
+          <li>🧾 Preparation before shipment creation</li>
+        </ul>
+
+        <p>
+          <em>
+            Queen is AfriShipPlus’ qualification assistant.
+            She helps prepare your request before it is forwarded to an agent.
+          </em>
+        </p>
+      </div>
+    </div>
+
+    <!-- Overlay sidebar -->
+    <div id="ai-overlay" class="ai-overlay"></div>
+
+    <div class="ai-layout">
+      <!-- Sidebar historique -->
+      <aside id="ai-sidebar" class="ai-sidebar">
+        <div class="ai-sidebar-head">
+          <div class="ai-sidebar-title">Historique</div>
+          <button id="ai-close-sidebar" class="ai-close-sidebar" type="button">✕</button>
+        </div>
+        <div id="ai-chat-list" class="ai-chat-list"></div>
+      </aside>
+
+      <!-- Zone principale -->
+      <main class="ai-main">
+        <div class="ai-card">
+          <div class="ai-messages" id="ai-messages"></div>
+
+          <div class="ai-inputbar">
+            <textarea
+              id="ai-text"
+              class="ai-text"
+              rows="2"
+              placeholder="Décrivez votre besoin à Queen..."
+            ></textarea>
+            <button id="ai-send" class="ai-send" type="button">Envoyer</button>
+          </div>
+        </div>
+
+        <div class="ai-footnote">
+          Astuce : expliquez votre besoin clairement (type d’expédition, poids ou CBM, nature du colis, destination).
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Bouton retour -->
+  <button class="back-float" type="button" onclick="history.back()">← Retour</button>
+
+  <script src="/static/app.js"></script>
+  <script src="/static/ai.js"></script>
+</body>
+</html>
