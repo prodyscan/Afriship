@@ -1,75 +1,64 @@
 import os
 import re
 import json
-import requests
 from typing import Optional, Dict, Any, List
 
-# -----------------------------
-# Config (Render / Github)
-# -----------------------------
-MISTRAL_API_KEY = (os.getenv("MISTRAL_API_KEY") or "").strip()
-MODEL_ID = (os.getenv("MISTRAL_MODEL") or "mistral-small-latest").strip()
-MISTRAL_URL = (os.getenv("MISTRAL_URL") or "https://api.mistral.ai/v1/chat/completions").strip()
+from huggingface_hub import InferenceClient
 
 # -----------------------------
-# Prompt (optimisé Mistral)
+# Config Qwen (gratuit)
+# -----------------------------
+HF_TOKEN = (os.getenv("HF_TOKEN") or "").strip()
+MODEL_ID = (os.getenv("QWEN_MODEL_ID") or "Qwen/Qwen2.5-7B-Instruct").strip()
+
+client = InferenceClient(
+    model=MODEL_ID,
+    token=HF_TOKEN if HF_TOKEN else None
+)
+
+# -----------------------------
+# Prompt Shiplus
 # -----------------------------
 SYSTEM_PROMPT = """
 Tu es Shiplus, l’assistante officielle de la plateforme AfriShipPlus.
 
-AfriShipPlus est une plateforme indépendante de mise en relation et de gestion de demandes d’expédition.
-AfriShipPlus n’est affiliée à aucune marketplace ou compagnie de transport.
+Ton rôle est de qualifier rapidement une demande d’expédition avant d’autoriser la création d’expédition.
 
-Rôle de Shiplus :
-- accueillir le client
-- comprendre son besoin d’expédition
-- faire une discussion préliminaire
-- poser les bonnes questions avant d’autoriser la création d’expédition
-- éviter que les agents soient dérangés par des demandes non sérieuses
-- expliquer clairement le fonctionnement de la plateforme
-- guider le client vers aérien ou maritime selon son besoin
+Tu dois poser seulement ces questions :
+1. type d’expédition : aérien ou maritime
+2. quantité :
+   - aérien = poids en kg
+   - maritime = volume en CBM
+3. nature du colis
+4. ville de destination
 
-Règles obligatoires :
-- Tu ne donnes jamais directement un numéro d’agent au début.
-- Tu ne promets jamais un contact agent si la demande n’est pas suffisamment qualifiée.
-- Tu dois d’abord vérifier que le client a un besoin sérieux et suffisamment clair.
-- Tu peux expliquer les minimums :
-  - aérien : minimum 10 kg
-  - maritime : minimum 0.3 CBM
-- Si la demande n’est pas prête, tu restes polie et tu expliques ce qu’il manque.
-- Si des informations manquent, pose une seule question courte à la fois.
-- Tu n’inventes jamais des prix en temps réel ni des données non fournies.
+Règles :
+- Ne pose qu’une seule question à la fois
+- Réponses courtes, professionnelles et claires
+- Ne demande pas de détails techniques inutiles
+- Ne parle jamais comme un système interne
+- Ne donne jamais directement un numéro d’agent au début
 
-Objectif :
-déterminer si le client est prêt à créer une expédition.
+Règle spéciale :
+- Si le colis contient batterie, lithium, power bank, pile ou batterie solaire
+  ET que le client demande aérien :
+  refuse l’aérien et propose le maritime
+  en expliquant que les batteries et produits contenant du lithium
+  ne sont pas acceptés en expédition aérienne à notre niveau
 
-Tu dois chercher à obtenir :
-1. type d’expédition (aérien ou maritime)
-2. poids en kg ou volume en CBM
-3. nature du colis / marchandise
-4. destination / ville
-5. niveau de préparation du client (prêt à expédier ou simple demande d’info)
+Qualification :
+- Si aérien et poids < 10 kg → STATUS: NOT_READY
+- Si maritime et volume < 0.3 CBM → STATUS: NOT_READY
+- Si une information manque → STATUS: NEED_MORE_INFO
+- Si les informations sont présentes et valides → STATUS: READY
 
-Statuts obligatoires :
-À la fin de chaque réponse, ajoute exactement UNE ligne parmi :
-
-STATUS: NOT_READY
-STATUS: NEED_MORE_INFO
+Réponse obligatoire :
+Tu dois terminer chaque réponse par UNE SEULE ligne exacte :
 STATUS: READY
-
-Règles de décision :
-- STATUS: NOT_READY
-  si le client n’est pas prêt, ou si les minimums ne sont pas respectés, ou si la demande est trop vague / pas sérieuse
-- STATUS: NEED_MORE_INFO
-  si la demande semble intéressante mais qu’il manque des informations essentielles
-- STATUS: READY
-  seulement si la demande est suffisamment claire, sérieuse, et respecte les minimums
-
-Style :
-- réponds dans la langue du client
-- si le client écrit en français, réponds uniquement en français
-- réponses courtes, professionnelles, utiles
-- ne répète pas "Bonjour" à chaque message si la conversation a déjà commencé
+ou
+STATUS: NEED_MORE_INFO
+ou
+STATUS: NOT_READY
 """.strip()
 
 FORBIDDEN_PHRASES = [
@@ -175,39 +164,8 @@ def _strip_repeated_greeting(answer: str, has_history: bool) -> str:
     a = re.sub(r"^(bonjour|bonsoir|salut)\s*[!.,:–-]*\s*", "", a, flags=re.I)
     return a.strip()
 
-
-def _call_mistral_chat(messages: List[Dict[str, str]], temperature: float, max_tokens: int) -> str:
-    if not MISTRAL_API_KEY:
-        raise RuntimeError("MISTRAL_API_KEY manquant (Render env var).")
-
-    headers = {
-        "Authorization": f"Bearer {MISTRAL_API_KEY}",
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
-
-    payload = {
-        "model": MODEL_ID,
-        "messages": messages,
-        "temperature": float(temperature),
-        "max_tokens": int(max_tokens),
-    }
-
-    r = requests.post(MISTRAL_URL, headers=headers, json=payload, timeout=60)
-
-    if r.status_code >= 400:
-        try:
-            detail = r.json()
-        except Exception:
-            detail = {"raw": r.text}
-        raise RuntimeError(f"Mistral HTTP {r.status_code}: {detail}")
-
-    data = r.json()
-    return (data.get("choices", [{}])[0].get("message", {}) or {}).get("content", "") or ""
-
-
 # -----------------------------
-# Public function (GARDER LE NOM)
+# Public function (garder le nom)
 # -----------------------------
 def ask_qwen(
     message: str,
@@ -234,15 +192,51 @@ def ask_qwen(
     chat_messages.append({"role": "user", "content": user_payload})
 
     try:
-        answer = _call_mistral_chat(chat_messages, temperature=temperature, max_tokens=max_tokens)
+        completion = client.chat_completion(
+            messages=chat_messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+        answer = completion.choices[0].message["content"]
+
         answer = sanitize_answer(answer)
         answer = _strip_repeated_greeting(answer, has_history)
+
         return {"answer": answer, "model": MODEL_ID}
 
     except Exception as e:
-        return {
-            "error": "⏳ Impossible de contacter Shiplus pour le moment. Réessaie dans quelques instants.",
-            "detail": str(e),
-            "model": MODEL_ID,
-            "has_key": bool(MISTRAL_API_KEY),
-        }
+        try:
+            prompt = system
+            if history:
+                hist_txt = "\n".join([f"{m['role'].upper()}: {m['content']}" for m in history])
+                prompt += "\n\n" + hist_txt
+            prompt += "\n\n" + user_payload + "\n\nAssistant:"
+
+            out = client.text_generation(
+                prompt,
+                max_new_tokens=max_tokens,
+                temperature=temperature,
+                do_sample=True,
+                return_full_text=False,
+            )
+
+            if isinstance(out, str):
+                answer = out
+            elif isinstance(out, dict) and "generated_text" in out:
+                answer = out["generated_text"]
+            else:
+                answer = str(out)
+
+            answer = sanitize_answer(answer)
+            answer = _strip_repeated_greeting(answer, has_history)
+
+            return {"answer": answer.strip(), "model": MODEL_ID}
+
+        except Exception as e2:
+            return {
+                "error": "⏳ Impossible de contacter Shiplus pour le moment. Réessaie dans quelques instants.",
+                "detail": str(e),
+                "detail2": str(e2),
+                "model": MODEL_ID,
+                "has_token": bool(HF_TOKEN),
+            }
