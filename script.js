@@ -10,6 +10,8 @@ const fixedCalcBox = document.getElementById("fixedCalcBox");
 const menuBtn = document.getElementById("menuBtn");
 const menu = document.getElementById("menu");
 
+const SHIPLUS_API_URL = "https://afriship.onrender.com/chat";
+
 // MENU
 menuBtn.addEventListener("click", () => {
   menu.classList.toggle("show");
@@ -25,12 +27,15 @@ function showSection(sectionId) {
   menu.classList.remove("show");
 }
 
-// Fermer menu si on clique ailleurs
+// fermer menu si on clique ailleurs
 document.addEventListener("click", (e) => {
   if (!menu.contains(e.target) && !menuBtn.contains(e.target)) {
     menu.classList.remove("show");
   }
 });
+
+// afficher assistant au démarrage
+showSection("assistant");
 
 // EXPEDITION AIR / SEA
 type.addEventListener("change", () => {
@@ -58,6 +63,60 @@ transportMode.addEventListener("change", () => {
   }
 });
 
+// SHIPLUS
+let shiplusHistory = [
+  {
+    role: "assistant",
+    content: "Bonjour, je suis Shiplus. Souhaitez-vous une expédition aérienne ou maritime ?"
+  }
+];
+
+async function sendToShiplus() {
+  const input = document.getElementById("shiplusInput");
+  const messagesBox = document.getElementById("shiplusMessages");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  messagesBox.innerHTML += `<p><strong>Vous :</strong> ${text}</p>`;
+  shiplusHistory.push({ role: "user", content: text });
+  input.value = "";
+
+  try {
+    const response = await fetch(SHIPLUS_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: text,
+        messages: shiplusHistory,
+        language: "fr"
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      messagesBox.innerHTML += `<p><strong>Shiplus :</strong> ${data.error}</p>`;
+      return;
+    }
+
+    const answer = data.answer || "Je n’ai pas pu répondre.";
+    messagesBox.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
+    shiplusHistory.push({ role: "assistant", content: answer });
+
+    if (answer.includes("STATUS: READY")) {
+      document.getElementById("expedition").classList.remove("hidden");
+      messagesBox.innerHTML += `<p><strong>Système :</strong> Vous pouvez maintenant créer votre expédition ✅</p>`;
+    }
+
+  } catch (error) {
+    messagesBox.innerHTML += `<p><strong>Shiplus :</strong> Erreur de connexion à Shiplus.</p>`;
+  }
+}
+
+// CREATION EXPEDITION
 async function createShipment() {
   const name = document.getElementById("name").value.trim();
   const phone = document.getElementById("phone").value.trim();
@@ -119,80 +178,17 @@ async function createShipment() {
     return;
   }
 
-  const message =
-    "Bonjour,%0A%0A" +
-    "Je viens de AfriShipPlus.%0A" +
-    "Agent : " + agentName + "%0A" +
-    "Code expédition : " + code + "%0A" +
-    "Nom : " + name + "%0A" +
-    "Nom du colis : " + goods + "%0A" +
-    "Détail : " + quantity + " " + unit + "%0A%0A" +
-    "Je souhaite faire une expédition.";
-
-  const link = "https://wa.me/" + agentPhone + "?text=" + message;
-
+  // ici, on ne montre plus directement le WhatsApp
   result.innerHTML =
     "Code : " + code +
-    "<br>Agent : " + agentName +
-    "<br><a href='" + link + "' target='_blank'>Contacter le cargo via WhatsApp</a>";
+    "<br>Votre demande a été enregistrée avec succès ✅" +
+    "<br>Gardez ce code pour suivre votre expédition.";
+
+  // on peut aussi ouvrir automatiquement l'onglet tracking
+  document.getElementById("trackCode").value = code;
 }
 
-const SHIPLUS_API_URL = "https://ton-backend.onrender.com/chat";
-
-
-
-let shiplusHistory = [
-  {
-    role: "assistant",
-    content: "Bonjour, je suis Shiplus. Souhaitez-vous une expédition aérienne ou maritime ?"
-  }
-];
-
-async function sendToShiplus() {
-  const input = document.getElementById("shiplusInput");
-  const messagesBox = document.getElementById("shiplusMessages");
-  const text = input.value.trim();
-
-  if (!text) return;
-
-  messagesBox.innerHTML += `<p><strong>Vous :</strong> ${text}</p>`;
-  shiplusHistory.push({ role: "user", content: text });
-  input.value = "";
-
-  try {
-    const response = await fetch(SHIPLUS_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: text,
-        messages: shiplusHistory,
-        language: "fr"
-      })
-    });
-
-    const data = await response.json();
-
-    if (data.error) {
-      messagesBox.innerHTML += `<p><strong>Shiplus :</strong> ${data.error}</p>`;
-      return;
-    }
-
-    const answer = data.answer || "Je n’ai pas pu répondre.";
-    messagesBox.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
-    shiplusHistory.push({ role: "assistant", content: answer });
-
-    if (answer.includes("STATUS: READY")) {
-      document.getElementById("expedition").classList.remove("hidden");
-      messagesBox.innerHTML += `<p><strong>Système :</strong> Vous pouvez maintenant créer votre expédition ✅</p>`;
-    }
-
-  } catch (error) {
-    messagesBox.innerHTML += `<p><strong>Shiplus :</strong> Erreur de connexion à Shiplus.</p>`;
-  }
-}
-
+// CALCULATEUR
 function calculateCost() {
   const currency = document.getElementById("currency").value.trim() || "FCFA";
   const productCost = parseFloat(document.getElementById("productCost").value) || 0;
@@ -228,6 +224,7 @@ function calculateCost() {
     "<strong>Total final : " + total.toLocaleString("fr-FR") + " " + currency + "</strong>";
 }
 
+// TRACKING
 async function trackShipment() {
   const code = document.getElementById("trackCode").value.trim();
   const trackingResult = document.getElementById("trackingResult");
