@@ -95,34 +95,41 @@ async function sendToShiplus() {
       })
     });
 
-/* ===== Traitement de la réponse API ===== */
+    const data = await response.json();
 
-   const data = await response.json();
-
-   if (data.error) {
+    if (data.error) {
       messagesBox.innerHTML += `<p><strong>Shiplus :</strong> ${data.error}</p>`;
       return;
-   }
+    }
 
-   let answer = "";
+    let answer = "";
 
-   if (data.answer) {
+    if (data.answer) {
       answer = data.answer;
-   } else if (data.generated_text) {
+    } else if (data.generated_text) {
       answer = data.generated_text;
-   } else if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+    } else if (
+      data.choices &&
+      data.choices[0] &&
+      data.choices[0].message &&
+      data.choices[0].message.content
+    ) {
       answer = data.choices[0].message.content;
-   } else {
+    } else {
       answer = "Réponse brute : " + JSON.stringify(data);
-   }
+    }
 
-   messagesBox.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
+    messagesBox.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
+    shiplusHistory.push({ role: "assistant", content: answer });
 
-
-
-
-  
-
+    if (answer.includes("STATUS: READY")) {
+      document.getElementById("expedition").classList.remove("hidden");
+      messagesBox.innerHTML += `<p><strong>Système :</strong> Vous pouvez maintenant créer votre expédition ✅</p>`;
+    }
+  } catch (error) {
+    messagesBox.innerHTML += `<p><strong>Shiplus :</strong> Erreur de connexion à Shiplus.</p>`;
+  }
+}
 
 // CREATION EXPEDITION
 async function createShipment() {
@@ -157,7 +164,7 @@ async function createShipment() {
   } else {
     const cbm = parseFloat(document.getElementById("cbm").value);
     if (isNaN(cbm) || cbm < 0.3) {
-      result.innerHTML = "Le minimum pour le maritime est 0.3 CBM.";
+      result.innerHTML = "Le minimum pour le maritime est de 0.3 CBM.";
       return;
     }
     quantity = cbm;
@@ -186,13 +193,11 @@ async function createShipment() {
     return;
   }
 
-  // ici, on ne montre plus directement le WhatsApp
   result.innerHTML =
     "Code : " + code +
     "<br>Votre demande a été enregistrée avec succès ✅" +
     "<br>Gardez ce code pour suivre votre expédition.";
 
-  // on peut aussi ouvrir automatiquement l'onglet tracking
   document.getElementById("trackCode").value = code;
 }
 
