@@ -1,0 +1,139 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  margin: 0;
+  color: #111;
+}
+
+.container {
+  max-width: 560px;
+  margin: auto;
+  padding: 20px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0a6cff;
+  color: white;
+  padding: 12px 15px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.topbar h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.topbar button {
+  width: auto;
+  margin-top: 0;
+  background: white;
+  color: #0a6cff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.menu {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  width: 100%;
+  background: white;
+  border-bottom: 1px solid #ddd;
+  display: none;
+  z-index: 1000;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.menu.show {
+  display: block;
+}
+
+.menu button {
+  width: 100%;
+  background: white;
+  color: #333;
+  border: none;
+  border-bottom: 1px solid #eee;
+  padding: 15px;
+  text-align: left;
+  margin: 0;
+  border-radius: 0;
+  font-size: 16px;
+}
+
+.menu button:last-child {
+  border-bottom: none;
+}
+
+h1, h2 {
+  margin-top: 0;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
+}
+
+label {
+  margin-top: 12px;
+  display: block;
+  font-weight: bold;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+button {
+  margin-top: 16px;
+  width: 100%;
+  padding: 12px;
+  background: #0a6cff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+button:hover {
+  background: #084dcc;
+}
+
+#result,
+#trackingResult {
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+.result-box {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #dbe3ee;
+  line-height: 1.6;
+}
+
+.hidden {
+  display: none !important;
+}
+
+a {
+  color: #0a6cff;
+  text-decoration: none;
+}
