@@ -10,7 +10,7 @@ const fixedCalcBox = document.getElementById("fixedCalcBox");
 const menuBtn = document.getElementById("menuBtn");
 const menu = document.getElementById("menu");
 
-const SHIPLUS_API_URL = "https://afriship.onrender.com/chat";
+const SHIPLUS_API_URL = "https://prodyscana-pro.hf.space/chat";
 
 // MENU
 menuBtn.addEventListener("click", () => {
