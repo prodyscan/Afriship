@@ -13,7 +13,6 @@
   <button id="menuBtn" type="button">☰ Menu</button>
 </div>
 
-
 <div id="menu" class="menu">
   <button type="button" onclick="showSection('assistant')">Shiplus</button>
   <button type="button" onclick="showSection('expedition')">Créer expédition</button>
@@ -23,7 +22,21 @@
 
 <div class="container">
 
-  <div class="card section-block" id="expedition">
+  <div class="card section-block" id="assistant">
+    <h2>Shiplus</h2>
+    <p>Discutez d’abord avec Shiplus avant de créer une expédition.</p>
+
+    <div id="shiplusMessages" class="result-box" style="min-height: 120px;">
+      <p><strong>Shiplus :</strong> Bonjour, je suis Shiplus. Souhaitez-vous une expédition aérienne ou maritime ?</p>
+    </div>
+
+    <label for="shiplusInput">Votre réponse</label>
+    <input id="shiplusInput" type="text" placeholder="Ex : aérien, 25 kg de chaussures pour Abidjan">
+
+    <button type="button" onclick="sendToShiplus()">Envoyer à Shiplus</button>
+  </div>
+
+  <div class="card section-block hidden" id="expedition">
     <h2>Créer une expédition</h2>
 
     <label>Nom</label>
