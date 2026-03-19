@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AfriShipPlus</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 🔵 TOP BAR -->
+
+<div class="topbar">
+  <h2>AfriShipPlus</h2>
+  <button id="menuBtn" type="button">☰ Menu</button>
+</div>
+
+<div id="menu" class="menu">
+  <button type="button" onclick="showSection('expedition')">Créer expédition</button>
+  <button type="button" onclick="showSection('tracking')">Suivre colis</button>
+  <button type="button" onclick="showSection('calculator')">Calculateur</button>
+</div>
+
+<div class="container">
+
+  <div class="card section-block" id="expedition">
+    <h2>Créer une expédition</h2>
+
+    <label>Nom</label>
+    <input id="name" type="text" placeholder="Nom complet">
+
+    <label>WhatsApp</label>
+    <input id="phone" type="text" placeholder="+2250700000000">
+
+    <label>Nom du colis</label>
+    <input id="goods" type="text" placeholder="Ex : chaussures">
+
+    <label>Type d'expédition</label>
+    <select id="type">
+      <option value="AIR">Aérien</option>
+      <option value="SEA">Maritime</option>
+    </select>
+
+    <div id="airBox">
+      <label>Poids (kg)</label>
+      <input id="kg" type="number" placeholder="Ex : 25">
+    </div>
+
+    <div id="seaBox" class="hidden">
+      <label>Volume (CBM)</label>
+      <input id="cbm" type="number" placeholder="Ex : 1.2">
+    </div>
+
+    <button type="button" onclick="createShipment()">Créer expédition</button>
+    <div id="result"></div>
+  </div>
+
+  <div class="card section-block hidden" id="tracking">
+    <h2>Suivre un colis</h2>
+
+    <label>Code expédition</label>
+    <input id="trackCode" type="text" placeholder="AIR-CI-1234">
+
+    <button type="button" onclick="trackShipment()">Rechercher</button>
+    <div id="trackingResult"></div>
+  </div>
+
+  <div class="card section-block hidden" id="calculator">
+    <h2>Calculateur de coût</h2>
+
+    <label>Devise</label>
+    <input id="currency" type="text" value="FCFA">
+
+    <label>Montant fournisseur</label>
+    <input id="productCost" type="number" placeholder="200000">
+
+    <label>Livraison locale</label>
+    <input id="localDelivery" type="number" placeholder="25000">
+
+    <label>Mode de transport</label>
+    <select id="transportMode">
+      <option value="kg">Par kg</option>
+      <option value="cbm">Par CBM</option>
+      <option value="fixed">Montant fixe</option>
+    </select>
+
+    <div id="kgCalcBox">
+      <label>Prix par kg</label>
+      <input id="pricePerKg" type="number">
+
+      <label>Poids total</label>
+      <input id="weightKg" type="number">
+    </div>
+
+    <div id="cbmCalcBox" class="hidden">
+      <label>Prix par CBM</label>
+      <input id="pricePerCbm" type="number">
+
+      <label>Volume total</label>
+      <input id="volumeCbm" type="number">
+    </div>
+
+    <div id="fixedCalcBox" class="hidden">
+      <label>Transport fixe</label>
+      <input id="fixedTransport" type="number">
+    </div>
+
+    <label>Taxes (%)</label>
+    <input id="taxes" type="number">
+
+    <button type="button" onclick="calculateCost()">Calculer</button>
+    <div id="calcResult" class="result-box hidden"></div>
+  </div>
+
+</div>
+
+
+
+
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://xcfqfzoxhxyvhrdnrknp.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_jBj2Jdk3H2S2yXfuVulQKg_E3Ls6tqR";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+<script src="script.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
