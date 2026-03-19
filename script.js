@@ -16,6 +16,7 @@ menuBtn.addEventListener("click", () => {
 });
 
 function showSection(sectionId) {
+  document.getElementById("assistant").classList.add("hidden");
   document.getElementById("expedition").classList.add("hidden");
   document.getElementById("tracking").classList.add("hidden");
   document.getElementById("calculator").classList.add("hidden");
@@ -134,6 +135,62 @@ async function createShipment() {
     "Code : " + code +
     "<br>Agent : " + agentName +
     "<br><a href='" + link + "' target='_blank'>Contacter le cargo via WhatsApp</a>";
+}
+
+
+
+const SHIPLUS_API_URL = "TON_URL_RENDER_ICI";
+
+let shiplusHistory = [
+  {
+    role: "assistant",
+    content: "Bonjour, je suis Shiplus. Souhaitez-vous une expédition aérienne ou maritime ?"
+  }
+];
+
+async function sendToShiplus() {
+  const input = document.getElementById("shiplusInput");
+  const messagesBox = document.getElementById("shiplusMessages");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  messagesBox.innerHTML += `<p><strong>Vous :</strong> ${text}</p>`;
+  shiplusHistory.push({ role: "user", content: text });
+  input.value = "";
+
+  try {
+    const response = await fetch(SHIPLUS_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: text,
+        messages: shiplusHistory,
+        language: "fr"
+      })
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      messagesBox.innerHTML += `<p><strong>Shiplus :</strong> ${data.error}</p>`;
+      return;
+    }
+
+    const answer = data.answer || "Je n’ai pas pu répondre.";
+    messagesBox.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
+    shiplusHistory.push({ role: "assistant", content: answer });
+
+    if (answer.includes("STATUS: READY")) {
+      document.getElementById("expedition").classList.remove("hidden");
+      messagesBox.innerHTML += `<p><strong>Système :</strong> Vous pouvez maintenant créer votre expédition ✅</p>`;
+    }
+
+  } catch (error) {
+    messagesBox.innerHTML += `<p><strong>Shiplus :</strong> Erreur de connexion à Shiplus.</p>`;
+  }
 }
 
 function calculateCost() {
