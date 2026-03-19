@@ -22,51 +22,53 @@
 
 <div class="container">
 
-  <div class="card section-block" id="assistant">
-    <h2>Shiplus</h2>
-    <p>Discutez d’abord avec Shiplus avant de créer une expédition.</p>
+<div class="card section-block" id="assistant">
+  <h2>Shiplus</h2>
+  <p>Discutez d’abord avec Shiplus avant de créer une expédition.</p>
 
-    <div id="shiplusMessages" class="result-box" style="min-height: 120px;">
-      <p><strong>Shiplus :</strong> Bonjour, je suis Shiplus. Souhaitez-vous une expédition aérienne ou maritime ?</p>
-    </div>
-
-    <label for="shiplusInput">Votre réponse</label>
-    <input id="shiplusInput" type="text" placeholder="Ex : aérien, 25 kg de chaussures pour Abidjan">
-
-    <button type="button" onclick="sendToShiplus()">Envoyer à Shiplus</button>
+  <div id="shiplusMessages" class="result-box" style="min-height: 120px;">
+    <p><strong>Shiplus :</strong> Bonjour, je suis Shiplus. Souhaitez-vous une expédition aérienne ou maritime ?</p>
   </div>
 
-  <div class="card section-block hidden" id="expedition">
-    <h2>Créer une expédition</h2>
+  <label for="shiplusInput">Votre réponse</label>
+  <input id="shiplusInput" type="text" placeholder="Ex : aérien, 25 kg de chaussures pour Abidjan">
 
-    <label>Nom</label>
-    <input id="name" type="text" placeholder="Nom complet">
+  <button id="aiSendBtn" type="button" onclick="sendToShiplus()">Envoyer à Shiplus</button>
+  <button id="newRequestBtn" type="button" class="hidden" onclick="resetShiplusFlow()">Nouvelle demande</button>
+</div>
 
-    <label>WhatsApp</label>
-    <input id="phone" type="text" placeholder="+2250700000000">
+<div class="card section-block hidden" id="expedition">
+  <h2>Créer une expédition</h2>
 
-    <label>Nom du colis</label>
-    <input id="goods" type="text" placeholder="Ex : chaussures">
+  <label>Nom</label>
+  <input id="name" type="text" placeholder="Nom complet">
 
-    <label>Type d'expédition</label>
-    <select id="type">
-      <option value="AIR">Aérien</option>
-      <option value="SEA">Maritime</option>
-    </select>
+  <label>WhatsApp</label>
+  <input id="phone" type="text" placeholder="+2250700000000">
 
-    <div id="airBox">
-      <label>Poids (kg)</label>
-      <input id="kg" type="number" placeholder="Ex : 25">
-    </div>
+  <label>Nom du colis</label>
+  <input id="goods" type="text" placeholder="Ex : chaussures">
 
-    <div id="seaBox" class="hidden">
-      <label>Volume (CBM)</label>
-      <input id="cbm" type="number" placeholder="Ex : 1.2">
-    </div>
+  <label>Type d'expédition</label>
+  <select id="type">
+    <option value="AIR">Aérien</option>
+    <option value="SEA">Maritime</option>
+  </select>
 
-    <button type="button" onclick="createShipment()">Créer expédition</button>
-    <div id="result"></div>
+  <div id="airBox">
+    <label>Poids (kg)</label>
+    <input id="kg" type="number" placeholder="Ex : 25">
   </div>
+
+  <div id="seaBox" class="hidden">
+    <label>Volume (CBM)</label>
+    <input id="cbm" type="number" placeholder="Ex : 1.2">
+  </div>
+
+  <button type="button" onclick="createShipment()">Créer expédition</button>
+  <div id="result"></div>
+  <div id="cargoContactBox"></div>
+</div>
 
   <div class="card section-block hidden" id="tracking">
     <h2>Suivre un colis</h2>
