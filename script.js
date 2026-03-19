@@ -137,9 +137,9 @@ async function createShipment() {
     "<br><a href='" + link + "' target='_blank'>Contacter le cargo via WhatsApp</a>";
 }
 
+const SHIPLUS_API_URL = "https://ton-backend.onrender.com/chat";
 
 
-const SHIPLUS_API_URL = "TON_URL_RENDER_ICI";
 
 let shiplusHistory = [
   {
