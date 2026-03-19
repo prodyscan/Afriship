@@ -95,24 +95,32 @@ async function sendToShiplus() {
       })
     });
 
-    const data = await response.json();
+/* ===== Traitement de la réponse API ===== */
 
-    if (data.error) {
+   const data = await response.json();
+
+   if (data.error) {
       messagesBox.innerHTML += `<p><strong>Shiplus :</strong> ${data.error}</p>`;
       return;
-    }
+   }
 
-    const answer = data.answer || "Je n’ai pas pu répondre.";
-    messagesBox.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
-    shiplusHistory.push({ role: "assistant", content: answer });
+   let answer = "";
 
-    if (answer.includes("STATUS: READY")) {
-      document.getElementById("expedition").classList.remove("hidden");
-      messagesBox.innerHTML += `<p><strong>Système :</strong> Vous pouvez maintenant créer votre expédition ✅</p>`;
-    }
+   if (data.answer) {
+      answer = data.answer;
+   } else if (data.generated_text) {
+      answer = data.generated_text;
+   } else if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+      answer = data.choices[0].message.content;
+   } else {
+      answer = "Réponse brute : " + JSON.stringify(data);
+   }
 
-  } catch (error) {
-    messagesBox.innerHTML += `<p><strong>Shiplus :</strong> Erreur de connexion à Shiplus.</p>`;
+   messagesBox.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
+
+
+
+
   }
 }
 
