@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Queen - AfriShipPlus</title>
+  <title>Shiplus - AfriShipPlus</title>
   <link rel="stylesheet" href="/static/ai.css" />
 </head>
 
@@ -12,7 +12,7 @@
 
     <header class="ai-header">
       <div class="ai-title">
-        <h1>Queen - AfriShipPlus</h1>
+        <h1>Shiplus - AfriShipPlus</h1>
         <p>Assistant de préqualification pour vos expéditions aériennes et maritimes</p>
       </div>
 
@@ -30,7 +30,7 @@
       <div class="ai-help-modal" role="dialog" aria-modal="true">
         <button id="ai-help-close" class="ai-help-close" type="button" aria-label="Fermer">✕</button>
 
-        <h2>Queen - AfriShipPlus</h2>
+        <h2>Shiplus - AfriShipPlus</h2>
 
         <h3>🇫🇷 Français</h3>
         <ul>
@@ -43,7 +43,7 @@
 
         <p>
           <em>
-            Queen est l’assistante de préqualification d’AfriShipPlus.
+            Shiplus est l’assistante de préqualification d’AfriShipPlus.
             Elle aide à préparer votre demande avant transmission à un agent.
           </em>
         </p>
@@ -61,7 +61,7 @@
 
         <p>
           <em>
-            Queen is AfriShipPlus’ qualification assistant.
+            Shiplus is AfriShipPlus’ qualification assistant.
             She helps prepare your request before it is forwarded to an agent.
           </em>
         </p>
@@ -91,7 +91,7 @@
               id="ai-text"
               class="ai-text"
               rows="2"
-              placeholder="Décrivez votre besoin à Queen..."
+              placeholder="Décrivez votre besoin à Shiplus..."
             ></textarea>
             <button id="ai-send" class="ai-send" type="button">Envoyer</button>
           </div>
