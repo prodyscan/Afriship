@@ -12,6 +12,20 @@ const menu = document.getElementById("menu");
 
 const SHIPLUS_API_URL = "https://prodyscana-pro.hf.space/chat";
 
+const shiplusInput = document.getElementById("shiplusInput");
+const aiSendBtn = document.getElementById("aiSendBtn");
+const newRequestBtn = document.getElementById("newRequestBtn");
+const shiplusMessages = document.getElementById("shiplusMessages");
+
+let qualifiedShipmentType = null; // "AIR" ou "SEA"
+
+let shiplusHistory = [
+  {
+    role: "assistant",
+    content: "Bonjour, je suis Shiplus. Souhaitez-vous une expédition aérienne ou maritime ?"
+  }
+];
+
 // MENU
 menuBtn.addEventListener("click", () => {
   menu.classList.toggle("show");
@@ -27,14 +41,12 @@ function showSection(sectionId) {
   menu.classList.remove("show");
 }
 
-// fermer menu si on clique ailleurs
 document.addEventListener("click", (e) => {
   if (!menu.contains(e.target) && !menuBtn.contains(e.target)) {
     menu.classList.remove("show");
   }
 });
 
-// afficher assistant au démarrage
 showSection("assistant");
 
 // EXPEDITION AIR / SEA
@@ -49,38 +61,63 @@ type.addEventListener("change", () => {
 });
 
 // CALCULATEUR
-transportMode.addEventListener("change", () => {
-  kgCalcBox.classList.add("hidden");
-  cbmCalcBox.classList.add("hidden");
-  fixedCalcBox.classList.add("hidden");
+if (transportMode) {
+  transportMode.addEventListener("change", () => {
+    kgCalcBox.classList.add("hidden");
+    cbmCalcBox.classList.add("hidden");
+    fixedCalcBox.classList.add("hidden");
 
-  if (transportMode.value === "kg") {
-    kgCalcBox.classList.remove("hidden");
-  } else if (transportMode.value === "cbm") {
-    cbmCalcBox.classList.remove("hidden");
-  } else {
-    fixedCalcBox.classList.remove("hidden");
-  }
-});
+    if (transportMode.value === "kg") {
+      kgCalcBox.classList.remove("hidden");
+    } else if (transportMode.value === "cbm") {
+      cbmCalcBox.classList.remove("hidden");
+    } else {
+      fixedCalcBox.classList.remove("hidden");
+    }
+  });
+}
 
 // SHIPLUS
-let shiplusHistory = [
-  {
-    role: "assistant",
-    content: "Bonjour, je suis Shiplus. Souhaitez-vous une expédition aérienne ou maritime ?"
+function lockShiplusChat() {
+  shiplusInput.disabled = true;
+  aiSendBtn.disabled = true;
+}
+
+function unlockShiplusChat() {
+  shiplusInput.disabled = false;
+  aiSendBtn.disabled = false;
+}
+
+function applyQualifiedType() {
+  if (qualifiedShipmentType === "AIR") {
+    type.value = "AIR";
+    type.disabled = true;
+    airBox.classList.remove("hidden");
+    seaBox.classList.add("hidden");
+  } else if (qualifiedShipmentType === "SEA") {
+    type.value = "SEA";
+    type.disabled = true;
+    airBox.classList.add("hidden");
+    seaBox.classList.remove("hidden");
+  } else {
+    type.disabled = false;
   }
-];
+}
+
+function detectTypeFromAnswer(answer) {
+  const lower = answer.toLowerCase();
+  if (lower.includes("maritime")) return "SEA";
+  if (lower.includes("aérien") || lower.includes("aerien")) return "AIR";
+  return null;
+}
 
 async function sendToShiplus() {
-  const input = document.getElementById("shiplusInput");
-  const messagesBox = document.getElementById("shiplusMessages");
-  const text = input.value.trim();
-
+  const text = shiplusInput.value.trim();
   if (!text) return;
 
-  messagesBox.innerHTML += `<p><strong>Vous :</strong> ${text}</p>`;
+  shiplusMessages.innerHTML += `<p><strong>Vous :</strong> ${text}</p>`;
   shiplusHistory.push({ role: "user", content: text });
-  input.value = "";
+  shiplusInput.value = "";
 
   try {
     const response = await fetch(SHIPLUS_API_URL, {
@@ -98,7 +135,7 @@ async function sendToShiplus() {
     const data = await response.json();
 
     if (data.error) {
-      messagesBox.innerHTML += `<p><strong>Shiplus :</strong> ${data.error}</p>`;
+      shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> ${data.error}</p>`;
       return;
     }
 
@@ -119,16 +156,58 @@ async function sendToShiplus() {
       answer = "Réponse brute : " + JSON.stringify(data);
     }
 
-    messagesBox.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
+    shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
     shiplusHistory.push({ role: "assistant", content: answer });
 
     if (answer.includes("STATUS: READY")) {
+      const detectedType = detectTypeFromAnswer(answer);
+      if (detectedType) {
+        qualifiedShipmentType = detectedType;
+      } else {
+        const fullText = shiplusHistory.map(m => m.content.toLowerCase()).join(" ");
+        if (fullText.includes("maritime")) qualifiedShipmentType = "SEA";
+        if (fullText.includes("aérien") || fullText.includes("aerien")) qualifiedShipmentType = "AIR";
+      }
+
+      applyQualifiedType();
       document.getElementById("expedition").classList.remove("hidden");
-      messagesBox.innerHTML += `<p><strong>Système :</strong> Vous pouvez maintenant créer votre expédition ✅</p>`;
+      shiplusMessages.innerHTML += `<p><strong>Système :</strong> Vous pouvez maintenant créer votre expédition ✅</p>`;
+      lockShiplusChat();
     }
   } catch (error) {
-    messagesBox.innerHTML += `<p><strong>Shiplus :</strong> Erreur de connexion à Shiplus.</p>`;
+    shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> Erreur de connexion à Shiplus.</p>`;
   }
+}
+
+function resetShiplusFlow() {
+  shiplusHistory = [
+    {
+      role: "assistant",
+      content: "Bonjour, je suis Shiplus. Souhaitez-vous une expédition aérienne ou maritime ?"
+    }
+  ];
+
+  qualifiedShipmentType = null;
+
+  shiplusMessages.innerHTML =
+    `<p><strong>Shiplus :</strong> Bonjour, je suis Shiplus. Souhaitez-vous une expédition aérienne ou maritime ?</p>`;
+
+  shiplusInput.value = "";
+  unlockShiplusChat();
+  type.disabled = false;
+
+  document.getElementById("expedition").classList.add("hidden");
+  document.getElementById("result").innerHTML = "";
+  document.getElementById("cargoContactBox").innerHTML = "";
+
+  document.getElementById("name").value = "";
+  document.getElementById("phone").value = "";
+  document.getElementById("goods").value = "";
+  document.getElementById("kg").value = "";
+  document.getElementById("cbm").value = "";
+
+  newRequestBtn.classList.add("hidden");
+  showSection("assistant");
 }
 
 // CREATION EXPEDITION
@@ -138,11 +217,31 @@ async function createShipment() {
   const goods = document.getElementById("goods").value.trim();
   const t = type.value;
   const result = document.getElementById("result");
+  const cargoContactBox = document.getElementById("cargoContactBox");
 
   result.innerHTML = "";
+  cargoContactBox.innerHTML = "";
 
   if (!name || !phone || !goods) {
     result.innerHTML = "Remplis tous les champs.";
+    return;
+  }
+
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: recentShipments, error: countError } = await supabaseClient
+    .from("shipments")
+    .select("id, created_at")
+    .eq("customer_phone", phone)
+    .gte("created_at", sevenDaysAgo);
+
+  if (countError) {
+    result.innerHTML = "Erreur de vérification : " + countError.message;
+    return;
+  }
+
+  if (recentShipments && recentShipments.length >= 3) {
+    result.innerHTML = "Limite atteinte : vous avez déjà créé 3 expéditions sur les 7 derniers jours.";
     return;
   }
 
@@ -199,6 +298,42 @@ async function createShipment() {
     "<br>Gardez ce code pour suivre votre expédition.";
 
   document.getElementById("trackCode").value = code;
+
+  const message =
+    "Bonjour,%0A%0A" +
+    "Je viens de AfriShipPlus.%0A" +
+    "Code expédition : " + code + "%0A" +
+    "Nom : " + name + "%0A" +
+    "Nom du colis : " + goods + "%0A" +
+    "Type : " + (t === "AIR" ? "Aérien" : "Maritime") + "%0A" +
+    "Détail : " + quantity + " " + unit + "%0A%0A" +
+    "Je souhaite finaliser cette expédition.";
+
+  const waLink = "https://wa.me/" + agentPhone + "?text=" + message;
+
+  cargoContactBox.innerHTML = `
+    <button type="button" onclick="openCargoContact('${code}', '${agentName}', '${agentPhone}', '${waLink}')">
+      Contacter le cargo
+    </button>
+  `;
+
+  newRequestBtn.classList.remove("hidden");
+}
+
+async function openCargoContact(code, agentName, agentPhone, waLink) {
+  try {
+    await supabaseClient
+      .from("shipments")
+      .update({
+        contact_opened: true,
+        contact_opened_at: new Date().toISOString(),
+        contact_agent_name: agentName,
+        contact_agent_phone: agentPhone
+      })
+      .eq("code", code);
+  } catch (e) {}
+
+  window.open(waLink, "_blank");
 }
 
 // CALCULATEUR
