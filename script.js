@@ -452,8 +452,9 @@ async function createShipment() {
   `;
   newRequestBtn.classList.remove("hidden");
 }
+
 async function openCargoContact(code, agentName, agentPhone, waLink) {
-  const { data, error } = await supabaseClient
+  const { error } = await supabaseClient
     .from("shipments")
     .update({
       contact_opened: true,
@@ -462,10 +463,8 @@ async function openCargoContact(code, agentName, agentPhone, waLink) {
       contact_agent_phone: agentPhone,
       status: "CONTACTED"
     })
-    .eq("code", code)
-    .select();
+    .eq("code", code);
 
-  console.log("CONTACT UPDATE DATA:", data);
   console.log("CONTACT UPDATE ERROR:", error);
 
   if (error) {
@@ -475,7 +474,6 @@ async function openCargoContact(code, agentName, agentPhone, waLink) {
 
   window.open(waLink, "_blank");
 }
-
 // CALCULATEUR
 function calculateCost() {
   const currency = document.getElementById("currency").value.trim() || "FCFA";
