@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - AfriShipPlus</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="topbar">
+    <h2>Dashboard Admin</h2>
+    <button type="button" onclick="logoutAdmin()">Déconnexion</button>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <h2>Statistiques</h2>
+      <div id="adminStats">Chargement...</div>
+    </div>
+
+    <div class="card">
+      <h2>Expéditions</h2>
+      <div id="adminShipments">Chargement...</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
