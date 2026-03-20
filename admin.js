@@ -138,6 +138,7 @@ async function loadAdminShipments() {
             <th>Statut</th>
             <th>Contact</th>
             <th>Action</th>
+            <th>Date</th>
           </tr>
         </thead>
         <tbody>
