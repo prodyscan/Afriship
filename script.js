@@ -10,6 +10,19 @@ const fixedCalcBox = document.getElementById("fixedCalcBox");
 const menuBtn = document.getElementById("menuBtn");
 const menu = document.getElementById("menu");
 
+if (menuBtn && menu) {
+  menuBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    menu.classList.toggle("show");
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!menu.contains(e.target) && !menuBtn.contains(e.target)) {
+      menu.classList.remove("show");
+    }
+  });
+}
+
 const SHIPLUS_API_URL = "https://prodyscana-pro.hf.space/chat";
 
 const shiplusInput = document.getElementById("shiplusInput");
@@ -64,11 +77,6 @@ function showSection(sectionId) {
   menu.classList.remove("show");
 }
 
-document.addEventListener("click", (e) => {
-  if (!menu.contains(e.target) && !menuBtn.contains(e.target)) {
-    menu.classList.remove("show");
-  }
-});
 
 showSection("assistant");
 
@@ -153,14 +161,25 @@ function detectTypeFromAnswer(answer) {
   return null;
 }
 
+function scrollShiplusToBottom() {
+  if (shiplusMessages) {
+    shiplusMessages.scrollTop = shiplusMessages.scrollHeight;
+  }
+}
+
 async function sendToShiplus() {
   const text = shiplusInput.value.trim();
   if (!text) return;
 
-  shiplusMessages.innerHTML += `<p><strong>Vous :</strong> ${text}</p>`;
-  shiplusHistory.push({ role: "user", content: text });
-/* ===== Détection du type d’expédition ===== */
+  // Message utilisateur
+  if (shiplusMessages) {
+    shiplusMessages.innerHTML += `<p><strong>Vous :</strong> ${text}</p>`;
+    scrollShiplusToBottom();
+  }
 
+  shiplusHistory.push({ role: "user", content: text });
+
+  // Détection type
   const lowerText = text.toLowerCase();
 
   if (lowerText.includes("maritime") || lowerText.includes("mer")) {
@@ -189,7 +208,10 @@ async function sendToShiplus() {
     const data = await response.json();
 
     if (data.error) {
-      shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> ${data.error}</p>`;
+      if (shiplusMessages) {
+        shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> ${data.error}</p>`;
+        scrollShiplusToBottom();
+      }
       return;
     }
 
@@ -209,37 +231,53 @@ async function sendToShiplus() {
     } else {
       answer = "Réponse brute : " + JSON.stringify(data);
     }
+
     answer = cleanShiplusAnswer(answer);
 
-    shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
+    // Message assistant
+    if (shiplusMessages) {
+      shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
+      scrollShiplusToBottom();
+    }
+
     shiplusHistory.push({ role: "assistant", content: answer });
 
-/* ===== Validation READY avec vérification minimum ===== */
+    /* ===== VALIDATION READY ===== */
 
     if (answer.includes("STATUS: READY")) {
-        const minimumCheck = checkMinimumRequirementsFromHistory();
+      const minimumCheck = checkMinimumRequirementsFromHistory();
 
-        if (!minimumCheck.ok) {
-            shiplusMessages.innerHTML += `<p><strong>Système :</strong> ${minimumCheck.message}</p>`;
-            return;
+      if (!minimumCheck.ok) {
+        if (shiplusMessages) {
+          shiplusMessages.innerHTML += `<p><strong>Système :</strong> ${minimumCheck.message}</p>`;
+          scrollShiplusToBottom();
         }
+        return;
+      }
 
-        const detectedType = detectQualifiedTypeFromUserHistory();
-        if (detectedType) {
-            qualifiedShipmentType = detectedType;
-        }
+      const detectedType = detectQualifiedTypeFromUserHistory();
+      if (detectedType) {
+        qualifiedShipmentType = detectedType;
+      }
 
-        applyQualifiedType();
-        document.getElementById("expedition").classList.remove("hidden");
+      applyQualifiedType();
+      document.getElementById("expedition").classList.remove("hidden");
+
+      if (shiplusMessages) {
         shiplusMessages.innerHTML += `<p><strong>Système :</strong> Vous pouvez maintenant créer votre expédition ✅</p>`;
-        lockShiplusChat();
+        scrollShiplusToBottom();
+      }
+
+      lockShiplusChat();
     }
 
   } catch (error) {
-    shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> Erreur de connexion à Shiplus.</p>`;
+    if (shiplusMessages) {
+      shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> Erreur de connexion à Shiplus.</p>`;
+      scrollShiplusToBottom();
+    }
   }
 }
-
 
 
 function checkMinimumRequirementsFromHistory() {
@@ -301,6 +339,7 @@ function resetShiplusFlow() {
   shiplusMessages.innerHTML =
     `<p><strong>Shiplus :</strong> Bonjour, je suis Shiplus. Souhaitez-vous une expédition aérienne ou maritime ?</p>`;
 
+  scrollShiplusToBottom();
   shiplusInput.value = "";
   unlockShiplusChat();
   type.disabled = false;
