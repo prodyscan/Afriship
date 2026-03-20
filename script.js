@@ -43,6 +43,17 @@ let shiplusHistory = [
 function cleanShiplusAnswer(answer) {
   let cleaned = answer;
 
+  // 🔥 SUPPRIMER les prix générés par l'IA
+  cleaned = cleaned.replace(/Tarifs estimatifs[\s\S]*?(STATUS: READY|$)/gi, "STATUS: READY");
+
+  // 🔥 SUPPRIMER calculs automatiques
+  cleaned = cleaned.replace(/Pour\s+\d+.*FCFA\./gi, "");
+
+  // 🔥 SUPPRIMER lignes avec FCFA
+  cleaned = cleaned.replace(/.*FCFA.*$/gim, "");
+
+  // ===== Tes corrections existantes =====
+
   cleaned = cleaned.replaceAll(
     "Le client est-il prêt à expédier bientôt ?",
     "Êtes-vous prêt à expédier votre colis bientôt ?"
