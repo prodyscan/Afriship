@@ -87,7 +87,6 @@ function unlockShiplusChat() {
   shiplusInput.disabled = false;
   aiSendBtn.disabled = false;
 }
-
 function applyQualifiedType() {
   if (qualifiedShipmentType === "AIR") {
     type.value = "AIR";
@@ -104,6 +103,26 @@ function applyQualifiedType() {
   }
 }
 
+function detectQualifiedTypeFromUserHistory() {
+  const userTexts = shiplusHistory
+    .filter(m => m.role === "user")
+    .map(m => m.content.toLowerCase());
+
+  for (let i = userTexts.length - 1; i >= 0; i--) {
+    const txt = userTexts[i];
+
+    if (txt.includes("maritime") || txt.includes("mer")) {
+      return "SEA";
+    }
+
+    if (txt.includes("aérien") || txt.includes("aerien") || txt.includes("air")) {
+      return "AIR";
+    }
+  }
+
+  return null;
+}
+
 function detectTypeFromAnswer(answer) {
   const lower = answer.toLowerCase();
   if (lower.includes("maritime")) return "SEA";
@@ -117,6 +136,18 @@ async function sendToShiplus() {
 
   shiplusMessages.innerHTML += `<p><strong>Vous :</strong> ${text}</p>`;
   shiplusHistory.push({ role: "user", content: text });
+/* ===== Détection du type d’expédition ===== */
+
+  const lowerText = text.toLowerCase();
+
+  if (lowerText.includes("maritime") || lowerText.includes("mer")) {
+    qualifiedShipmentType = "SEA";
+  }
+
+  if (lowerText.includes("aérien") || lowerText.includes("aerien") || lowerText.includes("air")) {
+    qualifiedShipmentType = "AIR";
+  }
+
   shiplusInput.value = "";
 
   try {
@@ -158,22 +189,21 @@ async function sendToShiplus() {
 
     shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
     shiplusHistory.push({ role: "assistant", content: answer });
+/* ===== Détection du statut READY ===== */
 
     if (answer.includes("STATUS: READY")) {
-      const detectedType = detectTypeFromAnswer(answer);
-      if (detectedType) {
-        qualifiedShipmentType = detectedType;
-      } else {
-        const fullText = shiplusHistory.map(m => m.content.toLowerCase()).join(" ");
-        if (fullText.includes("maritime")) qualifiedShipmentType = "SEA";
-        if (fullText.includes("aérien") || fullText.includes("aerien")) qualifiedShipmentType = "AIR";
-      }
+        const detectedType = detectQualifiedTypeFromUserHistory();
+        if (detectedType) {
+            qualifiedShipmentType = detectedType;
+        }
 
-      applyQualifiedType();
-      document.getElementById("expedition").classList.remove("hidden");
-      shiplusMessages.innerHTML += `<p><strong>Système :</strong> Vous pouvez maintenant créer votre expédition ✅</p>`;
-      lockShiplusChat();
+        applyQualifiedType();
+        document.getElementById("expedition").classList.remove("hidden");
+        shiplusMessages.innerHTML += `<p><strong>Système :</strong> Vous pouvez maintenant créer votre expédition ✅</p>`;
+        lockShiplusChat();
     }
+
+
   } catch (error) {
     shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> Erreur de connexion à Shiplus.</p>`;
   }
@@ -224,6 +254,29 @@ async function createShipment() {
 
   if (!name || !phone || !goods) {
     result.innerHTML = "Remplis tous les champs.";
+    return;
+  }
+
+/* ===== Vérification des produits interdits en aérien ===== */
+
+  const goodsLower = goods.toLowerCase();
+
+  const forbiddenAirKeywords = [
+    "batterie",
+    "lithium",
+    "power bank",
+    "powerbank",
+    "pile",
+    "batterie solaire"
+  ];
+
+  const isForbiddenAirItem = forbiddenAirKeywords.some(keyword =>
+    goodsLower.includes(keyword)
+  );
+
+  if (t === "AIR" && isForbiddenAirItem) {
+    result.innerHTML =
+      "Les batteries et produits contenant du lithium ne sont pas acceptés en aérien à notre niveau. Veuillez choisir maritime.";
     return;
   }
 
