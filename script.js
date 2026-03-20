@@ -167,6 +167,7 @@ function scrollShiplusToBottom() {
   }
 }
 
+
 async function sendToShiplus() {
   const text = shiplusInput.value.trim();
   if (!text) return;
@@ -181,6 +182,20 @@ async function sendToShiplus() {
 
   // Détection type
   const lowerText = text.toLowerCase();
+
+/* ===== Affichage des tarifs estimatifs ===== */
+
+  if (answer.includes("STATUS: READY")) {
+
+    shiplusMessages.innerHTML += `
+      <p><strong>Tarifs estimatifs :</strong><br>
+      📦 Normal : 225 000 FCFA / CBM<br>
+      🏷️ Marque : 235 000 FCFA / CBM<br>
+      🪵 Bois : 250 000 FCFA / CBM<br><br>
+      Les prix peuvent varier selon les conditions réelles.</p>
+    `;
+
+  }
 
   if (lowerText.includes("maritime") || lowerText.includes("mer")) {
     qualifiedShipmentType = "SEA";
