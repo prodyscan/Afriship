@@ -10,13 +10,42 @@ async function checkAdminSession() {
     return;
   }
 
-  loadAdminStats();
-  loadAdminShipments();
+  await loadAdminStats();
+  await loadAdminShipments();
 }
 
+function formatStatus(status) {
+  return `<span class="status-badge">${status || "—"}</span>`;
+}
+
+async function getFilteredShipments() {
+  let query = supabaseClient
+    .from("shipments")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  const filterType = document.getElementById("filterType")?.value || "";
+  const filterStatus = document.getElementById("filterStatus")?.value || "";
+  const filterPhone = document.getElementById("filterPhone")?.value.trim() || "";
+
+  if (filterType) {
+    query = query.eq("shipment_type", filterType);
+  }
+
+  if (filterStatus) {
+    query = query.eq("status", filterStatus);
+  }
+
+  if (filterPhone) {
+    query = query.ilike("customer_phone", `%${filterPhone}%`);
+  }
+
+  return await query;
+}
 
 async function loadAdminStats() {
   const statsBox = document.getElementById("adminStats");
+  if (!statsBox) return;
 
   const { data, error } = await getFilteredShipments();
 
@@ -62,12 +91,9 @@ async function loadAdminStats() {
   `;
 }
 
-function formatStatus(status) {
-  return `<span class="status-badge">${status || "—"}</span>`;
-}
-
-
 async function updateShipmentStatus(code, newStatus) {
+  if (!newStatus) return;
+
   const { error } = await supabaseClient
     .from("shipments")
     .update({ status: newStatus })
@@ -78,16 +104,13 @@ async function updateShipmentStatus(code, newStatus) {
     return;
   }
 
-  loadAdminStats();
-  loadAdminShipments();
-}
-
-function formatStatus(status) {
-  return `<span class="status-badge">${status || "—"}</span>`;
+  await loadAdminStats();
+  await loadAdminShipments();
 }
 
 async function loadAdminShipments() {
   const box = document.getElementById("adminShipments");
+  if (!box) return;
 
   const { data, error } = await getFilteredShipments();
 
@@ -96,7 +119,7 @@ async function loadAdminShipments() {
     return;
   }
 
-  if (!data.length) {
+  if (!data || !data.length) {
     box.innerHTML = "Aucune expédition.";
     return;
   }
@@ -145,33 +168,13 @@ async function loadAdminShipments() {
     `;
   });
 
-  html += `</tbody></table></div>`;
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
   box.innerHTML = html;
-}
-
-async function getFilteredShipments() {
-  let query = supabaseClient
-    .from("shipments")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  const filterType = document.getElementById("filterType")?.value || "";
-  const filterStatus = document.getElementById("filterStatus")?.value || "";
-  const filterPhone = document.getElementById("filterPhone")?.value.trim() || "";
-
-  if (filterType) {
-    query = query.eq("shipment_type", filterType);
-  }
-
-  if (filterStatus) {
-    query = query.eq("status", filterStatus);
-  }
-
-  if (filterPhone) {
-    query = query.ilike("customer_phone", `%${filterPhone}%`);
-  }
-
-  return await query;
 }
 
 async function logoutAdmin() {
