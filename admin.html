@@ -18,11 +18,35 @@
       <div id="adminStats">Chargement...</div>
     </div>
 
+<!-- ===== Filtre admin des expéditions ===== -->
+
     <div class="card">
-      <h2>Expéditions</h2>
-      <div id="adminShipments">Chargement...</div>
+        <h2>Bilan filtré</h2>
+
+        <label>Type</label>
+        <select id="filterType" onchange="loadAdminStats(); loadAdminShipments();">
+            <option value="">Tous</option>
+            <option value="AIR">Aérien</option>
+            <option value="SEA">Maritime</option>
+        </select>
+
+        <label>Statut</label>
+        <select id="filterStatus" onchange="loadAdminStats(); loadAdminShipments();">
+            <option value="">Tous</option>
+            <option value="Demande créée">Demande créée</option>
+            <option value="CONTACTED">Contacté</option>
+            <option value="IN_TRANSIT">En transit</option>
+            <option value="DELIVERED">Livré</option>
+            <option value="CANCELLED">Annulé</option>
+        </select>
+
+        <label>Téléphone client</label>
+        <input id="filterPhone" type="text" placeholder="Ex : 0777..." oninput="loadAdminStats(); loadAdminShipments();" />
+
+        <div id="adminStats">Chargement...</div>
     </div>
-  </div>
+
+
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="admin.js"></script>
