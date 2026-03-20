@@ -32,11 +32,29 @@ async function loadAdminStats() {
   const contacted = data.filter(x => x.contact_opened === true).length;
 
   statsBox.innerHTML = `
-    <p>Total expéditions : <strong>${total}</strong></p>
-    <p>Aérien : <strong>${air}</strong></p>
-    <p>Maritime : <strong>${sea}</strong></p>
-    <p>Contacts cargo ouverts : <strong>${contacted}</strong></p>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total expéditions</h3>
+        <div class="stat-value">${total}</div>
+      </div>
+      <div class="stat-card">
+        <h3>Aérien</h3>
+        <div class="stat-value">${air}</div>
+      </div>
+      <div class="stat-card">
+        <h3>Maritime</h3>
+        <div class="stat-value">${sea}</div>
+      </div>
+      <div class="stat-card">
+        <h3>Contacts cargo</h3>
+        <div class="stat-value">${contacted}</div>
+      </div>
+    </div>
   `;
+}
+
+function formatStatus(status) {
+  return `<span class="status-badge">${status || "—"}</span>`;
 }
 
 async function loadAdminShipments() {
@@ -58,17 +76,17 @@ async function loadAdminShipments() {
   }
 
   let html = `
-    <div style="overflow-x:auto;">
-      <table style="width:100%; border-collapse:collapse;">
+    <div class="admin-table-wrap">
+      <table class="admin-table">
         <thead>
           <tr>
-            <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Code</th>
-            <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Client</th>
-            <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Téléphone</th>
-            <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Colis</th>
-            <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Type</th>
-            <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Quantité</th>
-            <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Statut</th>
+            <th>Code</th>
+            <th>Client</th>
+            <th>Téléphone</th>
+            <th>Colis</th>
+            <th>Type</th>
+            <th>Quantité</th>
+            <th>Statut</th>
           </tr>
         </thead>
         <tbody>
@@ -77,13 +95,13 @@ async function loadAdminShipments() {
   data.forEach(item => {
     html += `
       <tr>
-        <td style="padding:8px; border-bottom:1px solid #eee;">${item.code || ""}</td>
-        <td style="padding:8px; border-bottom:1px solid #eee;">${item.customer_name || ""}</td>
-        <td style="padding:8px; border-bottom:1px solid #eee;">${item.customer_phone || ""}</td>
-        <td style="padding:8px; border-bottom:1px solid #eee;">${item.goods_name || ""}</td>
-        <td style="padding:8px; border-bottom:1px solid #eee;">${item.shipment_type || ""}</td>
-        <td style="padding:8px; border-bottom:1px solid #eee;">${item.quantity || ""} ${item.unit || ""}</td>
-        <td style="padding:8px; border-bottom:1px solid #eee;">${item.status || ""}</td>
+        <td>${item.code || ""}</td>
+        <td>${item.customer_name || ""}</td>
+        <td>${item.customer_phone || ""}</td>
+        <td>${item.goods_name || ""}</td>
+        <td>${item.shipment_type || ""}</td>
+        <td>${item.quantity || ""} ${item.unit || ""}</td>
+        <td>${formatStatus(item.status)}</td>
       </tr>
     `;
   });
