@@ -262,19 +262,32 @@ async function sendToShiplus() {
       applyQualifiedType();
       document.getElementById("expedition").classList.remove("hidden");
 
+      let pricingHtml = "";
 
-      
-      if (shiplusMessages) {
-        shiplusMessages.innerHTML += `
-          <p><strong>Tarifs estimatifs :</strong><br>
+      if (qualifiedShipmentType === "SEA") {
+        pricingHtml = `
+          <p><strong>Tarifs estimatifs maritimes :</strong><br>
           📦 Marchandises normales : 225 000 FCFA / CBM<br>
           🏷️ Produits de marque : 235 000 FCFA / CBM<br>
           🪵 Bois / spécial : 250 000 FCFA / CBM<br><br>
           Les prix affichés sont basés sur les conditions standard.</p>
+        `;
+      } else if (qualifiedShipmentType === "AIR") {
+        pricingHtml = `
+          <p><strong>Tarifs estimatifs aériens :</strong><br>
+          ✈️ Aérien : 9 500 FCFA / kg<br><br>
+          Minimum requis : 10 kg<br>
+          ⚠️ Batteries, liquides et poudres non acceptés en aérien.</p>
+        `;
+      }
+
+      if (shiplusMessages) {
+        shiplusMessages.innerHTML += `
+          ${pricingHtml}
 
           <p style="font-size:12px; color:gray;">
-          🔒 AfriShipPlus est une plateforme de mise en relation avec des agents cargo partenaires.
-          Le transport et les instructions finales sont assurés directement par le cargo.
+            🔒 AfriShipPlus est une plateforme de mise en relation avec des agents cargo partenaires.
+            Le transport et les instructions finales sont assurés directement par le cargo.
           </p>
 
           <p><strong>Système :</strong> Vous pouvez maintenant créer votre expédition ✅</p>
