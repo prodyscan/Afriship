@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion Admin - AfriShipPlus</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>Connexion administrateur</h2>
+
+      <label>Email</label>
+      <input id="adminEmail" type="email" placeholder="admin@email.com" />
+
+      <label>Mot de passe</label>
+      <input id="adminPassword" type="password" placeholder="••••••••" />
+
+      <button type="button" onclick="adminLogin()">Se connecter</button>
+      <div id="adminLoginResult"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://xcfqfzoxhxyvhrdnrknp.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_jBj2Jdk3H2S2yXfuVulQKg_E3Ls6tqR";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function adminLogin() {
+      const email = document.getElementById("adminEmail").value.trim();
+      const password = document.getElementById("adminPassword").value.trim();
+      const result = document.getElementById("adminLoginResult");
+
+      result.innerHTML = "";
+
+      const { error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        result.innerHTML = "Erreur : " + error.message;
+        return;
+      }
+
+      window.location.href = "admin.html";
+    }
+  </script>
+</body>
+</html>
