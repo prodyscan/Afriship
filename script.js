@@ -26,6 +26,34 @@ let shiplusHistory = [
   }
 ];
 
+
+function cleanShiplusAnswer(answer) {
+  let cleaned = answer;
+
+  cleaned = cleaned.replaceAll(
+    "Le client est-il prêt à expédier bientôt ?",
+    "Êtes-vous prêt à expédier votre colis bientôt ?"
+  );
+
+  cleaned = cleaned.replaceAll(
+    "Le client veut-il juste une information ou une vraie expédition ?",
+    "Souhaitez-vous simplement une information ou créer une vraie expédition ?"
+  );
+
+  cleaned = cleaned.replaceAll(
+    "Le client est prêt à expédier bientôt.",
+    "Vous êtes prêt à expédier bientôt."
+  );
+
+  cleaned = cleaned.replaceAll(
+    "La demande est suffisamment qualifiée pour la création d'une expédition.",
+    "Votre demande est suffisamment complète pour créer une expédition."
+  );
+
+  return cleaned;
+}
+
+
 // MENU
 menuBtn.addEventListener("click", () => {
   menu.classList.toggle("show");
@@ -186,6 +214,7 @@ async function sendToShiplus() {
     } else {
       answer = "Réponse brute : " + JSON.stringify(data);
     }
+    answer = cleanShiplusAnswer(answer);
 
     shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
     shiplusHistory.push({ role: "assistant", content: answer });
@@ -207,6 +236,54 @@ async function sendToShiplus() {
   } catch (error) {
     shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> Erreur de connexion à Shiplus.</p>`;
   }
+}
+
+
+
+function checkMinimumRequirementsFromHistory() {
+  const userTexts = shiplusHistory
+    .filter(m => m.role === "user")
+    .map(m => m.content.toLowerCase());
+
+  let detectedType = null;
+  let detectedKg = null;
+  let detectedCbm = null;
+
+  for (const txt of userTexts) {
+    if (txt.includes("maritime") || txt.includes("mer")) {
+      detectedType = "SEA";
+    }
+
+    if (txt.includes("aérien") || txt.includes("aerien") || txt.includes("air")) {
+      detectedType = "AIR";
+    }
+
+    const kgMatch = txt.match(/(\d+(?:[.,]\d+)?)\s*kg/);
+    if (kgMatch) {
+      detectedKg = parseFloat(kgMatch[1].replace(",", "."));
+    }
+
+    const cbmMatch = txt.match(/(\d+(?:[.,]\d+)?)\s*cbm/);
+    if (cbmMatch) {
+      detectedCbm = parseFloat(cbmMatch[1].replace(",", "."));
+    }
+  }
+
+  if (detectedType === "AIR" && detectedKg !== null && detectedKg < 10) {
+    return {
+      ok: false,
+      message: "Le minimum pour une expédition aérienne est de 10 kg."
+    };
+  }
+
+  if (detectedType === "SEA" && detectedCbm !== null && detectedCbm < 0.3) {
+    return {
+      ok: false,
+      message: "Le minimum pour une expédition maritime est de 0.3 CBM."
+    };
+  }
+
+  return { ok: true };
 }
 
 function resetShiplusFlow() {
