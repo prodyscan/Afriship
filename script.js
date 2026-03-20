@@ -452,29 +452,30 @@ async function createShipment() {
   `;
   newRequestBtn.classList.remove("hidden");
 }
-
 async function openCargoContact(code, agentName, agentPhone, waLink) {
-  try {
-    const { error } = await supabaseClient
-      .from("shipments")
-      .update({
-        contact_opened: true,
-        contact_opened_at: new Date().toISOString(),
-        contact_agent_name: agentName,
-        contact_agent_phone: agentPhone,
-        status: "CONTACTED"
-      })
-      .eq("code", code);
+  const { data, error } = await supabaseClient
+    .from("shipments")
+    .update({
+      contact_opened: true,
+      contact_opened_at: new Date().toISOString(),
+      contact_agent_name: agentName,
+      contact_agent_phone: agentPhone,
+      status: "CONTACTED"
+    })
+    .eq("code", code)
+    .select();
 
-    if (error) {
-      console.error("Erreur update contact cargo :", error.message);
-    }
-  } catch (e) {
-    console.error("Erreur contact cargo :", e);
+  console.log("CONTACT UPDATE DATA:", data);
+  console.log("CONTACT UPDATE ERROR:", error);
+
+  if (error) {
+    alert("Erreur contact cargo : " + error.message);
+    return;
   }
 
   window.open(waLink, "_blank");
 }
+
 // CALCULATEUR
 function calculateCost() {
   const currency = document.getElementById("currency").value.trim() || "FCFA";
