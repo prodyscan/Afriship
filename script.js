@@ -445,6 +445,8 @@ async function createShipment() {
 
   document.getElementById("trackCode").value = code;
 
+/* ===== Génération du message WhatsApp ===== */
+
   const message =
     "Bonjour,%0A%0A" +
     "Je viens de AfriShipPlus.%0A" +
@@ -462,7 +464,6 @@ async function createShipment() {
       Contacter le cargo
     </button>
   `;
-
   newRequestBtn.classList.remove("hidden");
 }
 
