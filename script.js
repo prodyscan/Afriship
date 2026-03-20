@@ -209,11 +209,36 @@ async function sendToShiplus() {
       headers: {
         "Content-Type": "application/json"
       },
+
+/* ===== Construction requête Shiplus ===== */
+
       body: JSON.stringify({
         message: text,
-        messages: shiplusHistory,
+        messages: [
+          {
+            role: "system",
+            content: `
+Tu es Shiplus, un assistant logistique professionnel.
+
+Règles strictes :
+
+- Ne pose jamais la même question deux fois.
+- Si le client dit "je ne sais pas", ne force pas.
+- Propose une alternative simple ou de continuer plus tard.
+- Ne jamais inventer des estimations (kg, CBM, etc).
+- Guide le client avec des exemples (cartons, type de produit).
+- Si le client hésite ou refuse, reste professionnel et flexible.
+- Tu aides à avancer, tu ne bloques pas.
+
+Objectif :
+Aider le client à créer une expédition facilement.
+`
+          },
+          ...shiplusHistory
+        ],
         language: "fr"
       })
+
     });
 
     const data = await response.json();
