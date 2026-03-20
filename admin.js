@@ -14,12 +14,11 @@ async function checkAdminSession() {
   loadAdminShipments();
 }
 
+
 async function loadAdminStats() {
   const statsBox = document.getElementById("adminStats");
 
-  const { data, error } = await supabaseClient
-    .from("shipments")
-    .select("*");
+  const { data, error } = await getFilteredShipments();
 
   if (error) {
     statsBox.innerHTML = "Erreur : " + error.message;
@@ -30,6 +29,8 @@ async function loadAdminStats() {
   const air = data.filter(x => x.shipment_type === "AIR").length;
   const sea = data.filter(x => x.shipment_type === "SEA").length;
   const contacted = data.filter(x => x.contact_opened === true).length;
+  const inTransit = data.filter(x => x.status === "IN_TRANSIT").length;
+  const delivered = data.filter(x => x.status === "DELIVERED").length;
 
   statsBox.innerHTML = `
     <div class="stats-grid">
@@ -49,8 +50,36 @@ async function loadAdminStats() {
         <h3>Contacts cargo</h3>
         <div class="stat-value">${contacted}</div>
       </div>
+      <div class="stat-card">
+        <h3>En transit</h3>
+        <div class="stat-value">${inTransit}</div>
+      </div>
+      <div class="stat-card">
+        <h3>Livrées</h3>
+        <div class="stat-value">${delivered}</div>
+      </div>
     </div>
   `;
+}
+
+function formatStatus(status) {
+  return `<span class="status-badge">${status || "—"}</span>`;
+}
+
+
+async function updateShipmentStatus(code, newStatus) {
+  const { error } = await supabaseClient
+    .from("shipments")
+    .update({ status: newStatus })
+    .eq("code", code);
+
+  if (error) {
+    alert("Erreur : " + error.message);
+    return;
+  }
+
+  loadAdminStats();
+  loadAdminShipments();
 }
 
 function formatStatus(status) {
@@ -60,10 +89,7 @@ function formatStatus(status) {
 async function loadAdminShipments() {
   const box = document.getElementById("adminShipments");
 
-  const { data, error } = await supabaseClient
-    .from("shipments")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const { data, error } = await getFilteredShipments();
 
   if (error) {
     box.innerHTML = "Erreur : " + error.message;
@@ -87,6 +113,8 @@ async function loadAdminShipments() {
             <th>Type</th>
             <th>Quantité</th>
             <th>Statut</th>
+            <th>Contact</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -102,12 +130,48 @@ async function loadAdminShipments() {
         <td>${item.shipment_type || ""}</td>
         <td>${item.quantity || ""} ${item.unit || ""}</td>
         <td>${formatStatus(item.status)}</td>
+        <td>${item.contact_opened ? "Oui" : "Non"}</td>
+        <td>
+          <select onchange="updateShipmentStatus('${item.code}', this.value)">
+            <option value="">Changer</option>
+            <option value="Demande créée">Demande créée</option>
+            <option value="CONTACTED">Contacté</option>
+            <option value="IN_TRANSIT">En transit</option>
+            <option value="DELIVERED">Livré</option>
+            <option value="CANCELLED">Annulé</option>
+          </select>
+        </td>
       </tr>
     `;
   });
 
   html += `</tbody></table></div>`;
   box.innerHTML = html;
+}
+
+async function getFilteredShipments() {
+  let query = supabaseClient
+    .from("shipments")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  const filterType = document.getElementById("filterType")?.value || "";
+  const filterStatus = document.getElementById("filterStatus")?.value || "";
+  const filterPhone = document.getElementById("filterPhone")?.value.trim() || "";
+
+  if (filterType) {
+    query = query.eq("shipment_type", filterType);
+  }
+
+  if (filterStatus) {
+    query = query.eq("status", filterStatus);
+  }
+
+  if (filterPhone) {
+    query = query.ilike("customer_phone", `%${filterPhone}%`);
+  }
+
+  return await query;
 }
 
 async function logoutAdmin() {
