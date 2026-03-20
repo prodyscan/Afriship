@@ -53,6 +53,22 @@ function cleanShiplusAnswer(answer) {
   return cleaned;
 }
 
+async function openCargoContact(code, agentName, agentPhone, waLink) {
+  try {
+    await supabaseClient
+      .from("shipments")
+      .update({
+        contact_opened: true,
+        contact_opened_at: new Date().toISOString(),
+        contact_agent_name: agentName,
+        contact_agent_phone: agentPhone,
+        status: "CONTACTED"
+      })
+      .eq("code", code);
+  } catch (e) {}
+
+  window.open(waLink, "_blank");
+}
 
 // MENU
 menuBtn.addEventListener("click", () => {
