@@ -124,61 +124,38 @@ async function loadAdminShipments() {
     return;
   }
 
-  let html = `
-    <div class="admin-table-wrap">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Code</th>
-            <th>Client</th>
-            <th>Téléphone</th>
-            <th>Colis</th>
-            <th>Type</th>
-            <th>Quantité</th>
-            <th>Statut</th>
-            <th>Contact</th>
-            <th>Action</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-  `;
+  let html = "";
 
   data.forEach(item => {
     html += `
-      <tr>
-        <td>${item.code || ""}</td>
-        <td>${item.customer_name || ""}</td>
-        <td>${item.customer_phone || ""}</td>
-        <td>${item.goods_name || ""}</td>
-        <td>${item.shipment_type || ""}</td>
-        <td>${item.quantity || ""} ${item.unit || ""}</td>
-        <td>${formatStatus(item.status)}</td>
-        <td>${item.contact_opened ? "Oui" : "Non"}</td>
-        <td>
-        <td>${item.created_at ? new Date(item.created_at).toLocaleString() : "-"}</td>
-         <select onchange="updateShipmentStatus('${item.code}', this.value)">
-            <option value="">Changer</option>
+      <div class="card" style="margin-bottom: 14px;">
+        <div><strong>Code :</strong> ${item.code || "-"}</div>
+        <div><strong>Client :</strong> ${item.customer_name || "-"}</div>
+        <div><strong>Téléphone :</strong> ${item.customer_phone || "-"}</div>
+        <div><strong>Colis :</strong> ${item.goods_name || "-"}</div>
+        <div><strong>Type :</strong> ${item.shipment_type || "-"}</div>
+        <div><strong>Quantité :</strong> ${item.quantity || "-"} ${item.unit || ""}</div>
+        <div><strong>Statut :</strong> ${formatStatus(item.status)}</div>
+        <div><strong>Contact cargo :</strong> ${item.contact_opened ? "Oui" : "Non"}</div>
+        <div><strong>Date :</strong> ${item.created_at ? new Date(item.created_at).toLocaleString("fr-FR") : "-"}</div>
+
+        <div style="margin-top: 12px;">
+          <select onchange="updateShipmentStatus('${item.code}', this.value)">
+            <option value="">Changer statut</option>
             <option value="Demande créée">Demande créée</option>
             <option value="CONTACTED">Contacté</option>
             <option value="IN_TRANSIT">En transit</option>
             <option value="DELIVERED">Livré</option>
             <option value="CANCELLED">Annulé</option>
           </select>
-        </td>
-      </tr>
+        </div>
+      </div>
     `;
   });
 
-  html += `
-        </tbody>
-      </table>
-    </div>
-  `;
-
   box.innerHTML = html;
 }
-
+  
 async function logoutAdmin() {
   await supabaseClient.auth.signOut();
   window.location.href = "admin-login.html";
