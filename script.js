@@ -247,10 +247,13 @@ async function sendToShiplus() {
 
     // Message assistant
     if (shiplusMessages) {
-/* ===== Nettoyage et affichage réponse Shiplus ===== */
+
+/* ===== Nettoyage des statuts et affichage réponse ===== */
 
       const displayAnswer = answer
-        .replace("STATUS: READY", "")
+        .replace(/STATUS:\s*READY/gi, "")
+        .replace(/STATUS:\s*NEED_MORE_INFO/gi, "")
+        .replace(/STATUS:\s*NOT_READY/gi, "")
         .replace(/\n/g, "<br>");
 
       shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> ${displayAnswer}</p>`;
