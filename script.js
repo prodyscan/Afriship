@@ -247,7 +247,14 @@ async function sendToShiplus() {
 
     // Message assistant
     if (shiplusMessages) {
-      shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
+/* ===== Nettoyage et affichage réponse Shiplus ===== */
+
+      const displayAnswer = answer
+        .replace("STATUS: READY", "")
+        .replace(/\n/g, "<br>");
+
+      shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> ${displayAnswer}</p>`;
+
       scrollShiplusToBottom();
     }
 
