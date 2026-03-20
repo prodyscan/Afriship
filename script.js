@@ -262,6 +262,8 @@ async function sendToShiplus() {
       applyQualifiedType();
       document.getElementById("expedition").classList.remove("hidden");
 
+
+      
       if (shiplusMessages) {
         shiplusMessages.innerHTML += `
           <p><strong>Tarifs estimatifs :</strong><br>
