@@ -155,7 +155,8 @@ async function loadAdminShipments() {
         <td>${formatStatus(item.status)}</td>
         <td>${item.contact_opened ? "Oui" : "Non"}</td>
         <td>
-          <select onchange="updateShipmentStatus('${item.code}', this.value)">
+        <td>${item.created_at ? new Date(item.created_at).toLocaleString() : "-"}</td>
+         <select onchange="updateShipmentStatus('${item.code}', this.value)">
             <option value="">Changer</option>
             <option value="Demande créée">Demande créée</option>
             <option value="CONTACTED">Contacté</option>
