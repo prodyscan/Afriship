@@ -53,27 +53,6 @@ function cleanShiplusAnswer(answer) {
   return cleaned;
 }
 
-async function openCargoContact(code, agentName, agentPhone, waLink) {
-  try {
-    await supabaseClient
-      .from("shipments")
-      .update({
-        contact_opened: true,
-        contact_opened_at: new Date().toISOString(),
-        contact_agent_name: agentName,
-        contact_agent_phone: agentPhone,
-        status: "CONTACTED"
-      })
-      .eq("code", code);
-  } catch (e) {}
-
-  window.open(waLink, "_blank");
-}
-
-// MENU
-menuBtn.addEventListener("click", () => {
-  menu.classList.toggle("show");
-});
 
 function showSection(sectionId) {
   document.getElementById("assistant").classList.add("hidden");
@@ -234,9 +213,17 @@ async function sendToShiplus() {
 
     shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> ${answer.replace(/\n/g, "<br>")}</p>`;
     shiplusHistory.push({ role: "assistant", content: answer });
-/* ===== Détection du statut READY ===== */
+
+/* ===== Validation READY avec vérification minimum ===== */
 
     if (answer.includes("STATUS: READY")) {
+        const minimumCheck = checkMinimumRequirementsFromHistory();
+
+        if (!minimumCheck.ok) {
+            shiplusMessages.innerHTML += `<p><strong>Système :</strong> ${minimumCheck.message}</p>`;
+            return;
+        }
+
         const detectedType = detectQualifiedTypeFromUserHistory();
         if (detectedType) {
             qualifiedShipmentType = detectedType;
@@ -247,7 +234,6 @@ async function sendToShiplus() {
         shiplusMessages.innerHTML += `<p><strong>Système :</strong> Vous pouvez maintenant créer votre expédition ✅</p>`;
         lockShiplusChat();
     }
-
 
   } catch (error) {
     shiplusMessages.innerHTML += `<p><strong>Shiplus :</strong> Erreur de connexion à Shiplus.</p>`;
@@ -469,20 +455,26 @@ async function createShipment() {
 
 async function openCargoContact(code, agentName, agentPhone, waLink) {
   try {
-    await supabaseClient
+    const { error } = await supabaseClient
       .from("shipments")
       .update({
         contact_opened: true,
         contact_opened_at: new Date().toISOString(),
         contact_agent_name: agentName,
-        contact_agent_phone: agentPhone
+        contact_agent_phone: agentPhone,
+        status: "CONTACTED"
       })
       .eq("code", code);
-  } catch (e) {}
+
+    if (error) {
+      console.error("Erreur update contact cargo :", error.message);
+    }
+  } catch (e) {
+    console.error("Erreur contact cargo :", e);
+  }
 
   window.open(waLink, "_blank");
 }
-
 // CALCULATEUR
 function calculateCost() {
   const currency = document.getElementById("currency").value.trim() || "FCFA";
